@@ -1,0 +1,247 @@
+import 'package:ecommerce_app_for_users/Services/Authentication.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+
+class SignInAndSignUp extends StatefulWidget {
+  @override
+  _SignInAndSignUpState createState() => _SignInAndSignUpState();
+}
+
+class _SignInAndSignUpState extends State<SignInAndSignUp> {
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
+
+  bool isLoading = false;
+  bool _isSignUp = false;
+  bool _showContainer = false;
+  late String _errorMassage;
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    emailController.clear();
+    passwordController.clear();
+    nameController.clear();
+
+    super.dispose();
+  }
+
+  validate() {
+    final FormState? form = _formKey.currentState;
+    if (form!.validate()) {
+      _isSignUp
+          ? Provider.of<Authentication>(context, listen: false)
+              .signUp(emailController.text, passwordController.text)
+              .then((value) {
+              Navigator.pop(context);
+              if (value != "Success") {
+                setState(() {
+                  _errorMassage = value;
+                  _showContainer = true;
+                });
+              }
+            })
+          : Provider.of<Authentication>(context, listen: false)
+              .signIn(emailController.text, passwordController.text)
+              .then(
+              (value) {
+                if (value != "Success") {
+                  setState(
+                    () {
+                      _errorMassage = value;
+                      _showContainer = true;
+                    },
+                  );
+                }
+              },
+            );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          "Ecommerce",
+          style: GoogleFonts.poppins(color: Color(0xFF628395)),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        brightness: Brightness.light,
+      ),
+      body: isLoading
+          ? Container(
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            )
+          : Stack(
+              children: [
+                SingleChildScrollView(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 13),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: <Widget>[
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.2,
+                          ),
+                          if (_isSignUp)
+                            TextFormField(
+                              controller: nameController,
+                              validator: (value) {
+                                return value == null || value.isEmpty
+                                    ? "Enter your name"
+                                    : null;
+                              },
+                              keyboardType: TextInputType.name,
+                              decoration: buildInputDecoration("Name"),
+                            ),
+                          SizedBox(height: 10),
+                          TextFormField(
+                            autofillHints: [AutofillHints.email],
+                            controller: emailController,
+                            validator: (value) {
+                              return value == null || value.isEmpty
+                                  ? "Enter a Email"
+                                  : value.contains('@') &&
+                                          value.contains('.com')
+                                      ? null
+                                      : "Enter a valid email";
+                            },
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: buildInputDecoration("Email"),
+                          ),
+                          SizedBox(height: 10),
+                          TextFormField(
+                            
+                              controller: passwordController,
+                              obscureText: true,
+                              validator: (value) {
+                                return value == null || value.isEmpty
+                                    ? "Enter a Password"
+                                    : value.length < 6
+                                        ? "Length should be more than 6"
+                                        : null;
+                              },
+                              decoration: buildInputDecoration("Password")),
+                          SizedBox(height: 25),
+                          GestureDetector(
+                            onTap: () {
+                              validate();
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.symmetric(vertical: 18),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: Color(0xFF628395),
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                              child: Text(
+                                _isSignUp ? "Sign Up" : "Sign In",
+                                style: GoogleFonts.poppins(
+                                    fontSize: 16, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 25),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Text(
+                                _isSignUp
+                                    ? "Already have an account ? "
+                                    : "Don't have an account ? ",
+                                style: GoogleFonts.poppins(fontSize: 15),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _isSignUp = !_isSignUp;
+                                  });
+                                },
+                                child: Text(
+                                  _isSignUp ? "Sign In" : "Sign Up",
+                                  style: GoogleFonts.poppins(
+                                    decoration: TextDecoration.underline,
+                                    fontSize: 15,
+                                    color: Color(0xFF628395),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 50),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                if (_showContainer) buildErrorContainer(),
+              ],
+            ),
+    );
+  }
+
+  Container buildErrorContainer() {
+    return Container(
+      height: 50,
+      decoration: BoxDecoration(color: Colors.amberAccent),
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Icon(Icons.error_outline),
+          ),
+          Expanded(child: Text(_errorMassage)),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _showContainer = false;
+              });
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Icon(Icons.close),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  InputDecoration buildInputDecoration(String text) {
+    return InputDecoration(
+      filled: true,
+      fillColor: Color(0xffDEEDF0),
+      enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: Colors.transparent,
+          )),
+      focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: Colors.transparent,
+          )),
+      errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: Colors.transparent,
+          )),
+      focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: Colors.transparent,
+          )),
+      hintText: text,
+      hintStyle: GoogleFonts.poppins(),
+    );
+  }
+}
