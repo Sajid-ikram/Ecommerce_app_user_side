@@ -12,25 +12,27 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController nameController = TextEditingController();
-
+  TextEditingController otpController = TextEditingController();
+  bool isVerified =false;
   bool isLoading = false;
   bool _isSignUp = false;
   bool _showContainer = false;
   late String _errorMassage;
-  final _formKey = GlobalKey<FormState>();
+  final _emailKey = GlobalKey<FormState>();
+  final _otpKey = GlobalKey<FormState>();
+  final _nameAndPassKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
     emailController.clear();
     passwordController.clear();
     nameController.clear();
-
+    otpController.clear();
     super.dispose();
   }
 
   validate() {
-    final FormState? form = _formKey.currentState;
-    if (form!.validate()) {
+    if (_nameAndPassKey.currentState!.validate() && isVerified) {
       _isSignUp
           ? Provider.of<Authentication>(context, listen: false)
               .signUp(emailController.text, passwordController.text)
@@ -58,6 +60,12 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
               },
             );
     }
+    else{
+      setState(() {
+        _errorMassage = "Please verify email first";
+        _showContainer = true;
+      });
+    }
   }
 
   @override
@@ -84,26 +92,17 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
                 SingleChildScrollView(
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 13),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: <Widget>[
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.2,
-                          ),
-                          if (_isSignUp)
-                            TextFormField(
-                              controller: nameController,
-                              validator: (value) {
-                                return value == null || value.isEmpty
-                                    ? "Enter your name"
-                                    : null;
-                              },
-                              keyboardType: TextInputType.name,
-                              decoration: buildInputDecoration("Name"),
-                            ),
-                          SizedBox(height: 10),
-                          TextFormField(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: <Widget>[
+                        SizedBox(
+                          height: _isSignUp
+                              ? MediaQuery.of(context).size.height * 0.14
+                              : MediaQuery.of(context).size.height * 0.22,
+                        ),
+                        Form(
+                          key: _emailKey,
+                          child: TextFormField(
                             autofillHints: [AutofillHints.email],
                             controller: emailController,
                             validator: (value) {
@@ -117,69 +116,171 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
                             keyboardType: TextInputType.emailAddress,
                             decoration: buildInputDecoration("Email"),
                           ),
-                          SizedBox(height: 10),
-                          TextFormField(
-                            
-                              controller: passwordController,
-                              obscureText: true,
-                              validator: (value) {
-                                return value == null || value.isEmpty
-                                    ? "Enter a Password"
-                                    : value.length < 6
-                                        ? "Length should be more than 6"
-                                        : null;
-                              },
-                              decoration: buildInputDecoration("Password")),
-                          SizedBox(height: 25),
-                          GestureDetector(
+                        ),
+                        if (_isSignUp)
+                          InkWell(
                             onTap: () {
-                              validate();
+                              if (_emailKey.currentState!.validate()) {
+                                Provider.of<Authentication>(context,
+                                        listen: false)
+                                    .sendOtp(emailController.text)
+                                    .then((value) {
+
+                                  if (value != "ok") {
+                                    setState(() {
+                                      _errorMassage = value;
+                                      _showContainer = true;
+                                    });
+                                  }
+                                  else{
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Verification Code Sent'),
+                                      ),
+                                    );
+                                  }
+                                });
+                              }
                             },
                             child: Container(
-                              width: double.infinity,
-                              padding: EdgeInsets.symmetric(vertical: 18),
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: Color(0xFF628395),
-                                borderRadius: BorderRadius.circular(50),
-                              ),
                               child: Text(
-                                _isSignUp ? "Sign Up" : "Sign In",
+                                "Send Verification Code  ",
                                 style: GoogleFonts.poppins(
-                                    fontSize: 16, color: Colors.white),
+                                    fontSize: 16, color: Color(0xFF628395)),
                               ),
+                              padding: EdgeInsets.symmetric(vertical: 10),
                             ),
                           ),
-                          SizedBox(height: 25),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Text(
-                                _isSignUp
-                                    ? "Already have an account ? "
-                                    : "Don't have an account ? ",
-                                style: GoogleFonts.poppins(fontSize: 15),
-                              ),
-                              GestureDetector(
-                                onTap: () {
+                        if (_isSignUp)
+                          Form(
+                            key: _otpKey,
+                            child: TextFormField(
+                              controller: otpController,
+                              validator: (value) {
+                                return value == null || value.isEmpty
+                                    ? "Enter the otp"
+                                    : null;
+                              },
+                              keyboardType: TextInputType.name,
+                              decoration: buildInputDecoration("Code"),
+                            ),
+                          ),
+                        if (_isSignUp)
+                          InkWell(
+                            onTap: () {
+                              if (_otpKey.currentState!.validate() && _emailKey.currentState!.validate()) {
+                                isVerified = Provider.of<Authentication>(
+                                        context,
+                                        listen: false)
+                                    .verify(emailController.text,
+                                        otpController.text);
+
+                                if (!isVerified) {
+
                                   setState(() {
-                                    _isSignUp = !_isSignUp;
+                                    _errorMassage = "Invalid Verification Code";
+                                    _showContainer = true;
                                   });
-                                },
-                                child: Text(
-                                  _isSignUp ? "Sign In" : "Sign Up",
-                                  style: GoogleFonts.poppins(
-                                    decoration: TextDecoration.underline,
-                                    fontSize: 15,
-                                    color: Color(0xFF628395),
-                                  ),
-                                ),
+                                }
+                                else{
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Verification Confirmed'),
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            child: Container(
+                              child: Text(
+                                "Confirm Code  ",
+                                style: GoogleFonts.poppins(
+                                    fontSize: 16, color: Color(0xFF628395)),
                               ),
+                              padding: EdgeInsets.symmetric(vertical: 10),
+                            ),
+                          ),
+                        if (!_isSignUp) SizedBox(height: 10),
+                        Form(
+                          key: _nameAndPassKey,
+                          child: Column(
+                            children: [
+                              if (_isSignUp)
+                                TextFormField(
+                                  controller: nameController,
+                                  validator: (value) {
+                                    return value == null || value.isEmpty
+                                        ? "Enter your name"
+                                        : null;
+                                  },
+                                  keyboardType: TextInputType.name,
+                                  decoration: buildInputDecoration("Name"),
+                                ),
+                              if (_isSignUp) SizedBox(height: 10),
+                              TextFormField(
+                                  controller: passwordController,
+                                  obscureText: true,
+                                  validator: (value) {
+                                    return value == null || value.isEmpty
+                                        ? "Enter a Password"
+                                        : value.length < 6
+                                            ? "Length should be more than 6"
+                                            : null;
+                                  },
+                                  decoration: buildInputDecoration("Password")),
                             ],
                           ),
-                          SizedBox(height: 50),
-                        ],
-                      ),
+                        ),
+                        SizedBox(height: 25),
+                        GestureDetector(
+                          onTap: () {
+                            validate();
+
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(vertical: 18),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: Color(0xFF628395),
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            child: Text(
+                              _isSignUp ? "Sign Up" : "Sign In",
+                              style: GoogleFonts.poppins(
+                                  fontSize: 16, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 25),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Text(
+                              _isSignUp
+                                  ? "Already have an account ? "
+                                  : "Don't have an account ? ",
+                              style: GoogleFonts.poppins(fontSize: 15),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _isSignUp = !_isSignUp;
+                                });
+                              },
+                              child: Text(
+                                _isSignUp ? "Sign In" : "Sign Up",
+                                style: GoogleFonts.poppins(
+                                  decoration: TextDecoration.underline,
+                                  fontSize: 15,
+                                  color: Color(0xFF628395),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 50),
+                      ],
                     ),
                   ),
                 ),

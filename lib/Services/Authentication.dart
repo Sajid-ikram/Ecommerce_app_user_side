@@ -1,4 +1,4 @@
-
+import 'package:email_auth/email_auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -68,5 +68,19 @@ class Authentication with ChangeNotifier {
     await _firebaseAuth.signOut();
   }
 
+  Future<String> sendOtp(String email) async {
+    EmailAuth.sessionName = "Ecommerce";
+    var data = await EmailAuth.sendOtp(receiverMail: email);
+    if (!data) {
+      return "Invalid Email";
+    }else{
+      return "ok";
+    }
+  }
 
+  bool verify(String email, String otp) {
+    return (EmailAuth.validate(
+        receiverMail: email,
+        userOTP: otp));
+  }
 }
