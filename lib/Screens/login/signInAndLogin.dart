@@ -1,5 +1,5 @@
 
-import 'package:ecommerce_app_for_users/Screens/login/test.dart';
+import 'package:ecommerce_app_for_users/Screens/login/ErrorDialog.dart';
 import 'package:ecommerce_app_for_users/Screens/login/warning.dart';
 import 'package:ecommerce_app_for_users/Services/Authentication.dart';
 import 'package:flutter/material.dart';
@@ -274,7 +274,7 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
                     ),
                   ),
                 ),
-                Test(),
+                ErrorDialog(),
               ],
             ),
     );
