@@ -1,3 +1,6 @@
+
+import 'package:ecommerce_app_for_users/Screens/login/test.dart';
+import 'package:ecommerce_app_for_users/Screens/login/warning.dart';
 import 'package:ecommerce_app_for_users/Services/Authentication.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,14 +16,13 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController nameController = TextEditingController();
   TextEditingController otpController = TextEditingController();
-  bool isVerified =false;
+  bool isVerified = false;
   bool isLoading = false;
   bool _isSignUp = false;
-  bool _showContainer = false;
-  late String _errorMassage;
   final _emailKey = GlobalKey<FormState>();
   final _otpKey = GlobalKey<FormState>();
-  final _nameAndPassKey = GlobalKey<FormState>();
+  final _nameKey = GlobalKey<FormState>();
+  final _passKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
@@ -32,39 +34,39 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
   }
 
   validate() {
-    if (_nameAndPassKey.currentState!.validate() && isVerified) {
-      _isSignUp
-          ? Provider.of<Authentication>(context, listen: false)
+    if (_isSignUp) {
+      if (!isVerified) {
+        Provider.of<Warning>(context, listen: false)
+            .showWarning("Please verify email first", Colors.amber, true);
+      } else {
+        if (_passKey.currentState!.validate() &&
+            _emailKey.currentState!.validate() &&
+            _nameKey.currentState!.validate()) {
+          Provider.of<Authentication>(context, listen: false)
               .signUp(emailController.text, passwordController.text)
               .then((value) {
-              Navigator.pop(context);
-              if (value != "Success") {
-                setState(() {
-                  _errorMassage = value;
-                  _showContainer = true;
-                });
-              }
-            })
-          : Provider.of<Authentication>(context, listen: false)
-              .signIn(emailController.text, passwordController.text)
-              .then(
-              (value) {
-                if (value != "Success") {
-                  setState(
-                    () {
-                      _errorMassage = value;
-                      _showContainer = true;
-                    },
-                  );
-                }
-              },
-            );
-    }
-    else{
-      setState(() {
-        _errorMassage = "Please verify email first";
-        _showContainer = true;
-      });
+
+            if (value != "Success") {
+              Provider.of<Warning>(context, listen: false)
+                  .showWarning(value, Colors.amber, true);
+            }
+          });
+        }
+      }
+    } else {
+      if (_passKey.currentState!.validate() &&
+          _emailKey.currentState!.validate()) {
+        Provider.of<Authentication>(context, listen: false)
+            .signIn(emailController.text, passwordController.text)
+            .then(
+          (value) {
+            if (value != "Success") {
+              Provider.of<Warning>(context, listen: false)
+                  .showWarning(value, Colors.amber, true);
+            }
+          },
+        );
+      }
     }
   }
 
@@ -125,19 +127,13 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
                                         listen: false)
                                     .sendOtp(emailController.text)
                                     .then((value) {
-
                                   if (value != "ok") {
-                                    setState(() {
-                                      _errorMassage = value;
-                                      _showContainer = true;
-                                    });
-                                  }
-                                  else{
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Verification Code Sent'),
-                                      ),
-                                    );
+                                    Provider.of<Warning>(context, listen: false)
+                                        .showWarning(value, Colors.amber, true);
+                                  } else {
+                                    Provider.of<Warning>(context, listen: false)
+                                        .showWarning('Verification Code Sent',
+                                            Colors.green, true);
                                   }
                                 });
                               }
@@ -168,7 +164,8 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
                         if (_isSignUp)
                           InkWell(
                             onTap: () {
-                              if (_otpKey.currentState!.validate() && _emailKey.currentState!.validate()) {
+                              if (_otpKey.currentState!.validate() &&
+                                  _emailKey.currentState!.validate()) {
                                 isVerified = Provider.of<Authentication>(
                                         context,
                                         listen: false)
@@ -176,18 +173,13 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
                                         otpController.text);
 
                                 if (!isVerified) {
-
-                                  setState(() {
-                                    _errorMassage = "Invalid Verification Code";
-                                    _showContainer = true;
-                                  });
-                                }
-                                else{
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Verification Confirmed'),
-                                    ),
-                                  );
+                                  Provider.of<Warning>(context, listen: false)
+                                      .showWarning("Invalid Verification Code",
+                                          Colors.amber, true);
+                                } else {
+                                  Provider.of<Warning>(context, listen: false)
+                                      .showWarning("Verification Confirmed",
+                                          Colors.green, true);
                                 }
                               }
                             },
@@ -201,41 +193,39 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
                             ),
                           ),
                         if (!_isSignUp) SizedBox(height: 10),
-                        Form(
-                          key: _nameAndPassKey,
-                          child: Column(
-                            children: [
-                              if (_isSignUp)
-                                TextFormField(
-                                  controller: nameController,
-                                  validator: (value) {
-                                    return value == null || value.isEmpty
-                                        ? "Enter your name"
-                                        : null;
-                                  },
-                                  keyboardType: TextInputType.name,
-                                  decoration: buildInputDecoration("Name"),
-                                ),
-                              if (_isSignUp) SizedBox(height: 10),
-                              TextFormField(
-                                  controller: passwordController,
-                                  obscureText: true,
-                                  validator: (value) {
-                                    return value == null || value.isEmpty
-                                        ? "Enter a Password"
-                                        : value.length < 6
-                                            ? "Length should be more than 6"
-                                            : null;
-                                  },
-                                  decoration: buildInputDecoration("Password")),
-                            ],
+                        if (_isSignUp)
+                          Form(
+                            key: _nameKey,
+                            child: TextFormField(
+                              controller: nameController,
+                              validator: (value) {
+                                return value == null || value.isEmpty
+                                    ? "Enter your name"
+                                    : null;
+                              },
+                              keyboardType: TextInputType.name,
+                              decoration: buildInputDecoration("Name"),
+                            ),
                           ),
+                        if (_isSignUp) SizedBox(height: 10),
+                        Form(
+                          key: _passKey,
+                          child: TextFormField(
+                              controller: passwordController,
+                              obscureText: true,
+                              validator: (value) {
+                                return value == null || value.isEmpty
+                                    ? "Enter a Password"
+                                    : value.length < 6
+                                        ? "Length should be more than 6"
+                                        : null;
+                              },
+                              decoration: buildInputDecoration("Password")),
                         ),
                         SizedBox(height: 25),
                         GestureDetector(
                           onTap: () {
                             validate();
-
                           },
                           child: Container(
                             width: double.infinity,
@@ -284,36 +274,9 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
                     ),
                   ),
                 ),
-                if (_showContainer) buildErrorContainer(),
+                Test(),
               ],
             ),
-    );
-  }
-
-  Container buildErrorContainer() {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(color: Colors.amberAccent),
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Icon(Icons.error_outline),
-          ),
-          Expanded(child: Text(_errorMassage)),
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                _showContainer = false;
-              });
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Icon(Icons.close),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
