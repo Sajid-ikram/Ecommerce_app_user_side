@@ -1,4 +1,3 @@
-
 import 'package:ecommerce_app_for_users/Screens/login/ErrorDialog.dart';
 import 'package:ecommerce_app_for_users/Screens/login/warning.dart';
 import 'package:ecommerce_app_for_users/Services/Authentication.dart';
@@ -33,33 +32,56 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
     super.dispose();
   }
 
-  validate() {
+  validate() async {
     if (_isSignUp) {
-      if (!isVerified) {
-        Provider.of<Warning>(context, listen: false)
-            .showWarning("Please verify email first", Colors.amber, true);
-      } else {
-        if (_passKey.currentState!.validate() &&
-            _emailKey.currentState!.validate() &&
-            _nameKey.currentState!.validate()) {
-          Provider.of<Authentication>(context, listen: false)
-              .signUp(emailController.text, passwordController.text, nameController.text )
-              .then((value) {
+      if (_passKey.currentState!.validate() &&
+          _emailKey.currentState!.validate() &&
+          _nameKey.currentState!.validate()) {
+        buildShowDialog(context);
 
-            if (value != "Success") {
+        Provider.of<Authentication>(context, listen: false)
+            .sendOtp(emailController.text)
+            .then(
+          (value) {
+            Navigator.of(context, rootNavigator: true).pop();
+
+            if (value != "ok") {
               Provider.of<Warning>(context, listen: false)
                   .showWarning(value, Colors.amber, true);
+            } else {
+              _showMyDialog().then(
+                (value) {
+                  if (isVerified) {
+                    buildShowDialog(context);
+                    Provider.of<Authentication>(context, listen: false)
+                        .signUp(emailController.text, passwordController.text,
+                            nameController.text)
+                        .then((value) {
+                      Navigator.of(context, rootNavigator: true).pop();
+                      if (value != "Success") {
+                        Provider.of<Warning>(context, listen: false)
+                            .showWarning(value, Colors.amber, true);
+                      }
+                    });
+                  } else {
+                    Provider.of<Warning>(context, listen: false).showWarning(
+                        "Unsuccessful verification", Colors.amber, true);
+                  }
+                },
+              );
             }
-          });
-        }
+          },
+        );
       }
     } else {
       if (_passKey.currentState!.validate() &&
           _emailKey.currentState!.validate()) {
+        buildShowDialog(context);
         Provider.of<Authentication>(context, listen: false)
             .signIn(emailController.text, passwordController.text)
             .then(
           (value) {
+            Navigator.of(context, rootNavigator: true).pop();
             if (value != "Success") {
               Provider.of<Warning>(context, listen: false)
                   .showWarning(value, Colors.amber, true);
@@ -70,10 +92,84 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
     }
   }
 
+  buildShowDialog(BuildContext context) {
+    return showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Center(
+            child: CircularProgressIndicator(color: Color(0xffFCCFA8)),
+          );
+        });
+  }
+
+  Future<void> _showMyDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Color(0xFF2B2B2B),
+          title: Text('Enter Verification Code',
+              style: GoogleFonts.poppins(color: Colors.white, fontSize: 15)),
+          content: SingleChildScrollView(
+            child: Form(
+              key: _otpKey,
+              child: TextFormField(
+                style: TextStyle(color: Colors.white),
+                controller: otpController,
+                validator: (value) {
+                  return value == null || value.isEmpty
+                      ? "Enter the otp"
+                      : null;
+                },
+                keyboardType: TextInputType.name,
+                decoration: buildInputDecoration("Code"),
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.poppins(color: Colors.white),
+              ),
+              onPressed: () {
+                otpController.clear();
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text(
+                'Verify',
+                style: GoogleFonts.poppins(color: Colors.green),
+              ),
+              onPressed: () {
+                if (_otpKey.currentState!.validate()) {
+                  isVerified =
+                      Provider.of<Authentication>(context, listen: false)
+                          .verify(emailController.text, otpController.text);
+
+                  if (!isVerified) {
+                    Provider.of<Warning>(context, listen: false).showWarning(
+                        "Invalid Verification Code", Colors.amber, true);
+                  } else {
+                    isVerified = true;
+                    Navigator.of(context).pop();
+                  }
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xff334756),
+      backgroundColor: Color(0xFF2B2B2B),
       appBar: AppBar(
         title: Text(
           "Ecommerce",
@@ -83,7 +179,6 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
         elevation: 0,
         backgroundColor: Colors.transparent,
         brightness: Brightness.light,
-
       ),
       body: isLoading
           ? Container(
@@ -100,13 +195,11 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: <Widget>[
                         SizedBox(
-                          height: _isSignUp
-                              ? MediaQuery.of(context).size.height * 0.14
-                              : MediaQuery.of(context).size.height * 0.22,
-                        ),
+                            height: MediaQuery.of(context).size.height * 0.20),
                         Form(
                           key: _emailKey,
                           child: TextFormField(
+                            style: TextStyle(color: Colors.white),
                             autofillHints: [AutofillHints.email],
                             controller: emailController,
                             validator: (value) {
@@ -117,88 +210,17 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
                                       ? null
                                       : "Enter a valid email";
                             },
+                            keyboardAppearance: Brightness.light,
                             keyboardType: TextInputType.emailAddress,
                             decoration: buildInputDecoration("Email"),
                           ),
                         ),
-                        if (_isSignUp)
-                          InkWell(
-                            onTap: () {
-                              if (_emailKey.currentState!.validate()) {
-                                Provider.of<Authentication>(context,
-                                        listen: false)
-                                    .sendOtp(emailController.text)
-                                    .then((value) {
-                                  if (value != "ok") {
-                                    Provider.of<Warning>(context, listen: false)
-                                        .showWarning(value, Colors.amber, true);
-                                  } else {
-                                    Provider.of<Warning>(context, listen: false)
-                                        .showWarning('Verification Code Sent',
-                                            Colors.green, true);
-                                  }
-                                });
-                              }
-                            },
-                            child: Container(
-                              child: Text(
-                                "Send Verification Code  ",
-                                style: GoogleFonts.poppins(
-                                    fontSize: 16, color: Color(0xFF628395)),
-                              ),
-                              padding: EdgeInsets.symmetric(vertical: 10),
-                            ),
-                          ),
-                        if (_isSignUp)
-                          Form(
-                            key: _otpKey,
-                            child: TextFormField(
-                              controller: otpController,
-                              validator: (value) {
-                                return value == null || value.isEmpty
-                                    ? "Enter the otp"
-                                    : null;
-                              },
-                              keyboardType: TextInputType.name,
-                              decoration: buildInputDecoration("Code"),
-                            ),
-                          ),
-                        if (_isSignUp)
-                          InkWell(
-                            onTap: () {
-                              if (_otpKey.currentState!.validate() &&
-                                  _emailKey.currentState!.validate()) {
-                                isVerified = Provider.of<Authentication>(
-                                        context,
-                                        listen: false)
-                                    .verify(emailController.text,
-                                        otpController.text);
-
-                                if (!isVerified) {
-                                  Provider.of<Warning>(context, listen: false)
-                                      .showWarning("Invalid Verification Code",
-                                          Colors.amber, true);
-                                } else {
-                                  Provider.of<Warning>(context, listen: false)
-                                      .showWarning("Verification Confirmed",
-                                          Colors.green, true);
-                                }
-                              }
-                            },
-                            child: Container(
-                              child: Text(
-                                "Confirm Code  ",
-                                style: GoogleFonts.poppins(
-                                    fontSize: 16, color: Color(0xFF628395)),
-                              ),
-                              padding: EdgeInsets.symmetric(vertical: 10),
-                            ),
-                          ),
-                        if (!_isSignUp) SizedBox(height: 10),
+                        SizedBox(height: 10),
                         if (_isSignUp)
                           Form(
                             key: _nameKey,
                             child: TextFormField(
+                              style: TextStyle(color: Colors.white),
                               controller: nameController,
                               validator: (value) {
                                 return value == null || value.isEmpty
@@ -213,6 +235,7 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
                         Form(
                           key: _passKey,
                           child: TextFormField(
+                              style: TextStyle(color: Colors.white),
                               controller: passwordController,
                               obscureText: true,
                               validator: (value) {
@@ -234,13 +257,13 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
                             padding: EdgeInsets.symmetric(vertical: 18),
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: Color(0xFF628395),
+                              color: Color(0xffFCCFA8),
                               borderRadius: BorderRadius.circular(50),
                             ),
                             child: Text(
                               _isSignUp ? "Sign Up" : "Sign In",
                               style: GoogleFonts.poppins(
-                                  fontSize: 16, color: Colors.white),
+                                  fontSize: 16, color: Color(0xff2B2B2B)),
                             ),
                           ),
                         ),
@@ -252,7 +275,8 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
                               _isSignUp
                                   ? "Already have an account ? "
                                   : "Don't have an account ? ",
-                              style: GoogleFonts.poppins(fontSize: 15),
+                              style: GoogleFonts.poppins(
+                                  fontSize: 15, color: Colors.white),
                             ),
                             GestureDetector(
                               onTap: () {
@@ -265,7 +289,7 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
                                 style: GoogleFonts.poppins(
                                   decoration: TextDecoration.underline,
                                   fontSize: 15,
-                                  color: Color(0xFF628395),
+                                  color: Color(0xffFCCFA8),
                                 ),
                               ),
                             ),
@@ -285,7 +309,7 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
   InputDecoration buildInputDecoration(String text) {
     return InputDecoration(
       filled: true,
-      fillColor: Color(0xffDEEDF0),
+      fillColor: Color(0xff444444),
       enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
@@ -307,7 +331,7 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
             color: Colors.transparent,
           )),
       hintText: text,
-      hintStyle: GoogleFonts.poppins(),
+      hintStyle: GoogleFonts.poppins(color: Colors.white),
     );
   }
 }

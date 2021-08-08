@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(
-        SystemUiOverlayStyle(statusBarColor: Colors.transparent));
+        SystemUiOverlayStyle(statusBarColor: Colors.transparent,));
     return MultiProvider(
 
       providers: [
@@ -94,7 +94,11 @@ class _MiddleOfHomeAndSignInState extends State<MiddleOfHomeAndSignIn> {
     return StreamBuilder<User?>(
       stream: Provider.of<Authentication>(context).authStateChange,
       builder: (context, snapshot) {
-        print("*************************************xoxo");
+        if(snapshot.connectionState == ConnectionState.waiting){
+          return Center(
+            child: CircularProgressIndicator(color: Color(0xffFCCFA8)),
+          );
+        }
         return snapshot.data == null ? SignInAndSignUp() : Home();
       },
     );

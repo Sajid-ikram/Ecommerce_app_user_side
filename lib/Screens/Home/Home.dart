@@ -20,64 +20,73 @@ class _HomeState extends State<Home> {
     return Scaffold(
       body: Row(
         children: <Widget>[
-          NavigationRail(
-            minWidth: 56.0,
-            groupAlignment: 1.0,
-            backgroundColor: Color(0xff2D3035),
-            selectedIndex: _selectedIndex,
-            onDestinationSelected: (int index) {
-              setState(() {
-                _selectedIndex = index;
-              });
-            },
-            labelType: NavigationRailLabelType.all,
-            leading: Column(
-              children: <Widget>[
-                SizedBox(
-                  height: 53,
-                ),
-                InkWell(
-                  onTap: (){
-                    Navigator.of(context).pushNamed("profile");
-                  },
-                  child: Center(
-                    child: CircleAvatar(
-                      radius: 16,
-                      backgroundImage: NetworkImage(
-                          "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1350&q=80"),
+          LayoutBuilder(builder: (context, constraint) {
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraint.maxHeight),
+                child: IntrinsicHeight(
+                  child: NavigationRail(
+                    minWidth: 56.0,
+                    groupAlignment: 1.0,
+                    backgroundColor: Color(0xff2D3035),
+                    selectedIndex: _selectedIndex,
+                    onDestinationSelected: (int index) {
+                      setState(() {
+                        _selectedIndex = index;
+                      });
+                    },
+                    labelType: NavigationRailLabelType.all,
+                    leading: Column(
+                      children: <Widget>[
+                        SizedBox(
+                          height: 53,
+                        ),
+                        InkWell(
+                          onTap: () {
+                            Navigator.of(context).pushNamed("profile");
+                          },
+                          child: Center(
+                            child: CircleAvatar(
+                              radius: 16,
+                              backgroundImage: NetworkImage(
+                                  "https://upload.wikimedia.org/wikipedia/en/thumb/d/d9/Elizabeth_Olsen_as_Wanda_Maximoff.jpg/220px-Elizabeth_Olsen_as_Wanda_Maximoff.jpg"),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 70,
+                        ),
+                        RotatedBox(
+                          quarterTurns: -1,
+                          child: IconButton(
+                            icon: Icon(Icons.tune),
+                            color: Color(0xffFCCFA8),
+                            onPressed: () {},
+                          ),
+                        )
+                      ],
                     ),
+                    selectedLabelTextStyle: TextStyle(
+                      color: Color(0xffFCCFA8),
+                      fontSize: 13,
+                      letterSpacing: 0.8,
+                      decoration: TextDecoration.underline,
+                      decorationThickness: 2.0,
+                    ),
+                    unselectedLabelTextStyle: TextStyle(
+                        fontSize: 13, letterSpacing: 0.8, color: Colors.white),
+                    destinations: [
+                      buildRotatedTextRailDestination("Popular", padding),
+                      buildRotatedTextRailDestination("Fashion", padding),
+                      buildRotatedTextRailDestination("Electronics", padding),
+                      buildRotatedTextRailDestination("Furniture", padding),
+                      buildRotatedTextRailDestination("All", padding),
+                    ],
                   ),
                 ),
-                SizedBox(
-                  height: 70,
-                ),
-                RotatedBox(
-                  quarterTurns: -1,
-                  child: IconButton(
-                    icon: Icon(Icons.tune),
-                    color: Color(0xffFCCFA8),
-                    onPressed: () {},
-                  ),
-                )
-              ],
-            ),
-            selectedLabelTextStyle: TextStyle(
-              color: Color(0xffFCCFA8),
-              fontSize: 13,
-              letterSpacing: 0.8,
-              decoration: TextDecoration.underline,
-              decorationThickness: 2.0,
-            ),
-            unselectedLabelTextStyle: TextStyle(
-                fontSize: 13, letterSpacing: 0.8, color: Colors.white),
-            destinations: [
-              buildRotatedTextRailDestination("Popular", padding),
-              buildRotatedTextRailDestination("Fashion", padding),
-              buildRotatedTextRailDestination("Electronics", padding),
-              buildRotatedTextRailDestination("Furniture", padding),
-              buildRotatedTextRailDestination("All", padding),
-            ],
-          ),
+              ),
+            );
+          }),
           const VerticalDivider(thickness: 1, width: 1),
           // This is the main content.
           buildItems(context)
@@ -109,7 +118,10 @@ class _HomeState extends State<Home> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
                   IconButton(
-                    icon: Icon(Icons.search),
+                    icon: Icon(
+                      Icons.search,
+                      color: Color(0xffFCCFA8),
+                    ),
                     onPressed: () {},
                   ),
                 ],
@@ -117,9 +129,10 @@ class _HomeState extends State<Home> {
               SizedBox(
                 height: 20,
               ),
-
-              Text(titles[_selectedIndex],
-                  style: Theme.of(context).textTheme.headline4,),
+              Text(
+                titles[_selectedIndex],
+                style: Theme.of(context).textTheme.headline4,
+              ),
               SizedBox(
                 height: 20,
               ),
