@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_auth/email_auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -14,6 +15,7 @@ class Authentication with ChangeNotifier {
         email: email,
         password: password,
       );
+
       return "Success";
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
@@ -37,13 +39,26 @@ class Authentication with ChangeNotifier {
     }
   }
 
-  Future<String> signUp(String email, String password) async {
+  Future<String> signUp(String email, String password, String name) async {
     try {
-      UserCredential userCredential =
-          await _firebaseAuth.createUserWithEmailAndPassword(
+      _firebaseAuth
+          .createUserWithEmailAndPassword(
         email: email,
         password: password,
+      ).then(
+        (value) {
+          FirebaseFirestore.instance
+              .collection("users")
+              .doc(value.user!.uid)
+              .set(
+            {
+              "name": name,
+              "email": value.user!.email,
+            },
+          );
+        },
       );
+
       return "Success";
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
@@ -73,14 +88,12 @@ class Authentication with ChangeNotifier {
     var data = await EmailAuth.sendOtp(receiverMail: email);
     if (!data) {
       return "Invalid Email";
-    }else{
+    } else {
       return "ok";
     }
   }
 
   bool verify(String email, String otp) {
-    return (EmailAuth.validate(
-        receiverMail: email,
-        userOTP: otp));
+    return (EmailAuth.validate(receiverMail: email, userOTP: otp));
   }
 }

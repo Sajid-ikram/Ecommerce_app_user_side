@@ -1,5 +1,6 @@
 import 'package:ecommerce_app_for_users/Screens/login/signInAndLogin.dart';
 import 'package:ecommerce_app_for_users/Screens/login/warning.dart';
+import 'package:ecommerce_app_for_users/Screens/profile.dart';
 import 'package:ecommerce_app_for_users/Services/Authentication.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -7,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import 'Screens/Home.dart';
+import 'Screens/Home/Home.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
     SystemChrome.setSystemUIOverlayStyle(
         SystemUiOverlayStyle(statusBarColor: Colors.transparent));
     return MultiProvider(
+
       providers: [
         ChangeNotifierProvider(create: (_) => Authentication()),
         ChangeNotifierProvider(create: (_) => Warning()),
@@ -30,7 +32,9 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           title: 'Flutter Demo',
           theme: ThemeData(
+            textTheme: TextTheme(headline4: TextStyle(color: Color(0xffFCCFA8),fontSize: 27)),
             primarySwatch: Colors.blue,
+            scaffoldBackgroundColor: Color(0xff28292E),
           ),
           home: FutureBuilder(
             future: _initialization,
@@ -49,8 +53,15 @@ class MyApp extends StatelessWidget {
                 massage: "Loading",
               );
             },
-          )),
+          ),
+        routes: {
+          "profile": (ctx) => Profile(),
+
+        },
+      ),
+
     );
+
   }
 }
 
@@ -83,6 +94,7 @@ class _MiddleOfHomeAndSignInState extends State<MiddleOfHomeAndSignIn> {
     return StreamBuilder<User?>(
       stream: Provider.of<Authentication>(context).authStateChange,
       builder: (context, snapshot) {
+        print("*************************************xoxo");
         return snapshot.data == null ? SignInAndSignUp() : Home();
       },
     );

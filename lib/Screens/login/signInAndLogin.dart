@@ -43,7 +43,7 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
             _emailKey.currentState!.validate() &&
             _nameKey.currentState!.validate()) {
           Provider.of<Authentication>(context, listen: false)
-              .signUp(emailController.text, passwordController.text)
+              .signUp(emailController.text, passwordController.text, nameController.text )
               .then((value) {
 
             if (value != "Success") {
@@ -73,15 +73,17 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xff334756),
       appBar: AppBar(
         title: Text(
           "Ecommerce",
-          style: GoogleFonts.poppins(color: Color(0xFF628395)),
+          style: GoogleFonts.poppins(color: Colors.white),
         ),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
         brightness: Brightness.light,
+
       ),
       body: isLoading
           ? Container(
@@ -223,7 +225,7 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
                               decoration: buildInputDecoration("Password")),
                         ),
                         SizedBox(height: 25),
-                        GestureDetector(
+                        InkWell(
                           onTap: () {
                             validate();
                           },
