@@ -1,6 +1,8 @@
 import 'package:ecommerce_app_for_users/Screens/login/signInAndLogin.dart';
 import 'package:ecommerce_app_for_users/Screens/login/warning.dart';
-import 'package:ecommerce_app_for_users/Screens/profile.dart';
+import 'package:ecommerce_app_for_users/Screens/profile/profile.dart';
+import 'package:ecommerce_app_for_users/Screens/profile/profileProvider.dart';
+import 'package:ecommerce_app_for_users/Screens/profile/selectImage.dart';
 import 'package:ecommerce_app_for_users/Services/Authentication.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -27,6 +29,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => Authentication()),
         ChangeNotifierProvider(create: (_) => Warning()),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ],
       child: MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -56,6 +59,7 @@ class MyApp extends StatelessWidget {
           ),
         routes: {
           "profile": (ctx) => Profile(),
+          "selectImage": (ctx) => SelectImage(),
 
         },
       ),

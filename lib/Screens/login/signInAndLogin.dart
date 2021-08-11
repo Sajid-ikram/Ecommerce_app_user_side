@@ -79,8 +79,7 @@ class _SignInAndSignUpState extends State<SignInAndSignUp> {
         buildShowDialog(context);
         Provider.of<Authentication>(context, listen: false)
             .signIn(emailController.text, passwordController.text)
-            .then(
-          (value) {
+            .then((value) {
             Navigator.of(context, rootNavigator: true).pop();
             if (value != "Success") {
               Provider.of<Warning>(context, listen: false)

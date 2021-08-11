@@ -10,8 +10,7 @@ class Authentication with ChangeNotifier {
 
   Future<String> signIn(String email, String password) async {
     try {
-      UserCredential userCredential =
-          await _firebaseAuth.signInWithEmailAndPassword(
+      await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -45,16 +44,14 @@ class Authentication with ChangeNotifier {
           .createUserWithEmailAndPassword(
         email: email,
         password: password,
-      ).then(
+      )
+          .then(
         (value) {
           FirebaseFirestore.instance
               .collection("users")
               .doc(value.user!.uid)
               .set(
-            {
-              "name": name,
-              "email": value.user!.email,
-            },
+            {"name": name, "email": value.user!.email, "url": ""},
           );
         },
       );

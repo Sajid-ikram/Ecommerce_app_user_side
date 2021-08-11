@@ -66,29 +66,32 @@ class _IndividualItemsState extends State<IndividualItems> {
                 children: [
                   Container(
                     alignment: Alignment.centerLeft,
-                    padding: EdgeInsets.all(6),
                     width: double.infinity,
-                    height: MediaQuery.of(context).size.height * 0.08,
+                    //height: MediaQuery.of(context).size.height * 0.08,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(13),
                       color: Colors.white,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          data.docs[index]["name"],
-                          style: GoogleFonts.poppins(
-                              color: Color(0xFF628395), fontSize: 14),
-                        ),
-                        SizedBox(height: 5),
-                        Text("\$${data.docs[index]["price"].toString()}",
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(15,8,8,8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            data.docs[index]["name"],
                             style: GoogleFonts.poppins(
-                                color: Color(0xFF628395),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700)),
-                        //SizedBox(height: 5),
-                      ],
+                                color: Color(0xFF628395), fontSize: 14),
+                          ),
+
+                          Text("\$${data.docs[index]["price"].toString()}",
+                              style: GoogleFonts.poppins(
+                                  color: Color(0xFF628395),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700)),
+                          //SizedBox(height: 5),
+                        ],
+                      ),
                     ),
                   ),
                   Positioned(

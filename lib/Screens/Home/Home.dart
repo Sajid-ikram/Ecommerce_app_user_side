@@ -1,8 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_app_for_users/Screens/Home/InvididualItems.dart';
+import 'package:ecommerce_app_for_users/Screens/profile/profileProvider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -14,6 +15,15 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
   var padding = 8.0;
+  final User? user = FirebaseAuth.instance.currentUser;
+
+  @override
+  void initState() {
+    print("666666666666666666666666666666");
+    print(user!.uid);
+    Provider.of<ProfileProvider>(context, listen: false).getUserInfo(user!.uid);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,10 +56,22 @@ class _HomeState extends State<Home> {
                             Navigator.of(context).pushNamed("profile");
                           },
                           child: Center(
-                            child: CircleAvatar(
-                              radius: 16,
-                              backgroundImage: NetworkImage(
-                                  "https://upload.wikimedia.org/wikipedia/en/thumb/d/d9/Elizabeth_Olsen_as_Wanda_Maximoff.jpg/220px-Elizabeth_Olsen_as_Wanda_Maximoff.jpg"),
+                            child: Consumer<ProfileProvider>(
+                              builder: (context, provider, child) {
+                                print(provider.profileUrl);
+                                return provider.profileUrl != ""? CircleAvatar(
+                                  backgroundColor: Colors.grey,
+                                  radius: 16,
+                                  backgroundImage: NetworkImage(
+                                      Provider.of<ProfileProvider>(context,
+                                              listen: false)
+                                          .profileUrl),
+                                ):CircleAvatar(
+                                  backgroundColor: Colors.grey,
+                                  radius: 16,
+                                  backgroundImage: AssetImage("assets/profile.jpg"),
+                                );
+                              },
                             ),
                           ),
                         ),
