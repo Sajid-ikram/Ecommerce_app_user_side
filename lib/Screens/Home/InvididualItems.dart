@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ecommerce_app_for_users/Screens/Home/homeController.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class IndividualItems extends StatefulWidget {
   const IndividualItems({Key? key}) : super(key: key);
@@ -25,19 +27,33 @@ class _IndividualItemsState extends State<IndividualItems> {
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator(),);
+            return Center(
+              child: CircularProgressIndicator(),
+            );
           }
 
           final data = snapshot.data;
 
-          return GridView.builder(
-              physics: BouncingScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 1, childAspectRatio: 2 / 2),
-              itemCount: data!.size,
-              itemBuilder: (BuildContext context, int index) {
-                return productCard(data, index);
-              });
+          return Consumer<HomeController>(
+            builder: (context, provider, child) {
+
+              return ListView.builder(
+                physics: BouncingScrollPhysics(),
+                itemBuilder: (ctx, index) {
+                  if (provider.pageNumber == 3) {
+                    return productCard(data!, index);
+                  } else if (data!.docs[index]["category"] ==
+                      provider.titles[provider.pageNumber]) {
+
+                    return productCard(data, index);
+                  }
+
+                  return SizedBox();
+                },
+                itemCount: data!.size,
+              );
+            },
+          );
         },
       ),
     );
@@ -45,13 +61,18 @@ class _IndividualItemsState extends State<IndividualItems> {
 
   Widget productCard(QuerySnapshot<Object?> data, int index) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        Navigator.pushNamed(context, "productDetailPage",arguments: data.docs[index]);
+      },
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+
       child: Hero(
         tag: data.docs[index].id,
         child: Container(
           padding: EdgeInsets.all(20),
-          margin: EdgeInsets.fromLTRB(2, 10, 15, 10),
-          height: MediaQuery.of(context).size.height * 0.5,
+          margin: EdgeInsets.fromLTRB(0, 10, 15, 10),
+          height: MediaQuery.of(context).size.height * 0.3,
           decoration: BoxDecoration(
             image: DecorationImage(
               image: NetworkImage(data.docs[index]["url"]),
@@ -73,7 +94,7 @@ class _IndividualItemsState extends State<IndividualItems> {
                       color: Colors.white,
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(15,8,8,8),
+                      padding: const EdgeInsets.fromLTRB(15, 8, 8, 8),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,

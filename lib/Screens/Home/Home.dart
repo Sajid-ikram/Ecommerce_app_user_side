@@ -1,4 +1,6 @@
 import 'package:ecommerce_app_for_users/Screens/Home/InvididualItems.dart';
+import 'package:ecommerce_app_for_users/Screens/Home/homeController.dart';
+import 'package:ecommerce_app_for_users/Screens/Home/sideNevigationBar.dart';
 import 'package:ecommerce_app_for_users/Screens/profile/profileProvider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,13 +15,10 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  int _selectedIndex = 0;
-  var padding = 8.0;
   final User? user = FirebaseAuth.instance.currentUser;
 
   @override
   void initState() {
-    print("666666666666666666666666666666");
     print(user!.uid);
     Provider.of<ProfileProvider>(context, listen: false).getUserInfo(user!.uid);
     super.initState();
@@ -30,87 +29,8 @@ class _HomeState extends State<Home> {
     return Scaffold(
       body: Row(
         children: <Widget>[
-          LayoutBuilder(builder: (context, constraint) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraint.maxHeight),
-                child: IntrinsicHeight(
-                  child: NavigationRail(
-                    minWidth: 56.0,
-                    groupAlignment: 1.0,
-                    backgroundColor: Color(0xff2D3035),
-                    selectedIndex: _selectedIndex,
-                    onDestinationSelected: (int index) {
-                      setState(() {
-                        _selectedIndex = index;
-                      });
-                    },
-                    labelType: NavigationRailLabelType.all,
-                    leading: Column(
-                      children: <Widget>[
-                        SizedBox(
-                          height: 53,
-                        ),
-                        InkWell(
-                          onTap: () {
-                            Navigator.of(context).pushNamed("profile");
-                          },
-                          child: Center(
-                            child: Consumer<ProfileProvider>(
-                              builder: (context, provider, child) {
-                                print(provider.profileUrl);
-                                return provider.profileUrl != ""? CircleAvatar(
-                                  backgroundColor: Colors.grey,
-                                  radius: 16,
-                                  backgroundImage: NetworkImage(
-                                      Provider.of<ProfileProvider>(context,
-                                              listen: false)
-                                          .profileUrl),
-                                ):CircleAvatar(
-                                  backgroundColor: Colors.grey,
-                                  radius: 16,
-                                  backgroundImage: AssetImage("assets/profile.jpg"),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 70,
-                        ),
-                        RotatedBox(
-                          quarterTurns: -1,
-                          child: IconButton(
-                            icon: Icon(Icons.tune),
-                            color: Color(0xffFCCFA8),
-                            onPressed: () {},
-                          ),
-                        )
-                      ],
-                    ),
-                    selectedLabelTextStyle: TextStyle(
-                      color: Color(0xffFCCFA8),
-                      fontSize: 13,
-                      letterSpacing: 0.8,
-                      decoration: TextDecoration.underline,
-                      decorationThickness: 2.0,
-                    ),
-                    unselectedLabelTextStyle: TextStyle(
-                        fontSize: 13, letterSpacing: 0.8, color: Colors.white),
-                    destinations: [
-                      buildRotatedTextRailDestination("Popular", padding),
-                      buildRotatedTextRailDestination("Fashion", padding),
-                      buildRotatedTextRailDestination("Electronics", padding),
-                      buildRotatedTextRailDestination("Furniture", padding),
-                      buildRotatedTextRailDestination("All", padding),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }),
+          SideNavigationBar(),
           const VerticalDivider(thickness: 1, width: 1),
-          // This is the main content.
           buildItems(context)
         ],
       ),
@@ -125,13 +45,16 @@ class _HomeState extends State<Home> {
       "Furniture",
       "All"
     ];
+
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 8, 0, 0),
+        padding: const EdgeInsets.fromLTRB(20, 8, 0, 0),
         child: MediaQuery.removePadding(
           removeTop: true,
           context: context,
           child: ListView(
+            //physics: BouncingScrollPhysics(),
+            physics: NeverScrollableScrollPhysics(),
             children: <Widget>[
               SizedBox(
                 height: 37,
@@ -148,33 +71,23 @@ class _HomeState extends State<Home> {
                   ),
                 ],
               ),
-              SizedBox(
-                height: 20,
+              const SizedBox(
+                height: 10,
               ),
-              Text(
-                titles[_selectedIndex],
-                style: Theme.of(context).textTheme.headline4,
+              Consumer<HomeController>(
+                builder: (context, provider, child) {
+                  return Text(
+                    titles[provider.pageNumber],
+                    style: TextStyle(fontSize: 26, color: Color(0xffFCCFA8)),
+                  );
+                },
               ),
-              SizedBox(
-                height: 20,
+              const SizedBox(
+                height: 5,
               ),
               IndividualItems()
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  NavigationRailDestination buildRotatedTextRailDestination(
-      String text, double padding) {
-    return NavigationRailDestination(
-      icon: SizedBox.shrink(),
-      label: Padding(
-        padding: EdgeInsets.symmetric(vertical: padding),
-        child: RotatedBox(
-          quarterTurns: -1,
-          child: Text(text),
         ),
       ),
     );
