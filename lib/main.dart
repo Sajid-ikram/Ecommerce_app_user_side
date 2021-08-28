@@ -1,9 +1,12 @@
 import 'package:ecommerce_app_for_users/Screens/Home/homeController.dart';
+import 'package:ecommerce_app_for_users/Screens/cart/cartScreen.dart';
 import 'package:ecommerce_app_for_users/Screens/login/signInAndLogin.dart';
-import 'package:ecommerce_app_for_users/Screens/login/warning.dart';
+import 'package:ecommerce_app_for_users/Services/cartNotificationProvider.dart';
+import 'package:ecommerce_app_for_users/Services/cartProvider.dart';
+import 'package:ecommerce_app_for_users/Services/warning.dart';
 import 'package:ecommerce_app_for_users/Screens/product/productDetailPage.dart';
 import 'package:ecommerce_app_for_users/Screens/profile/profile.dart';
-import 'package:ecommerce_app_for_users/Screens/profile/profileProvider.dart';
+import 'package:ecommerce_app_for_users/Services/profileProvider.dart';
 import 'package:ecommerce_app_for_users/Screens/profile/selectImage.dart';
 import 'package:ecommerce_app_for_users/Services/Authentication.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -34,6 +37,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => Warning()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => HomeController()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => CartNotificationProvider()),
       ],
       child: MaterialApp(
 
@@ -72,6 +77,7 @@ class MyApp extends StatelessWidget {
           "profile": (ctx) => Profile(),
           "selectImage": (ctx) => SelectImage(),
           "productDetailPage": (ctx) => ProductDetailPage(),
+          "cartPage": (ctx) => CartScreen(),
         },
       ),
     );

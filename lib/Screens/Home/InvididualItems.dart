@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_app_for_users/Screens/Home/homeController.dart';
+import 'package:ecommerce_app_for_users/Services/cartNotificationProvider.dart';
+import 'package:ecommerce_app_for_users/Services/cartProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +14,8 @@ class IndividualItems extends StatefulWidget {
 }
 
 class _IndividualItemsState extends State<IndividualItems> {
+
+
   final Stream<QuerySnapshot> user =
       FirebaseFirestore.instance.collection("products").snapshots();
 
@@ -36,7 +40,6 @@ class _IndividualItemsState extends State<IndividualItems> {
 
           return Consumer<HomeController>(
             builder: (context, provider, child) {
-
               return ListView.builder(
                 physics: BouncingScrollPhysics(),
                 itemBuilder: (ctx, index) {
@@ -44,7 +47,6 @@ class _IndividualItemsState extends State<IndividualItems> {
                     return productCard(data!, index);
                   } else if (data!.docs[index]["category"] ==
                       provider.titles[provider.pageNumber]) {
-
                     return productCard(data, index);
                   }
 
@@ -62,11 +64,11 @@ class _IndividualItemsState extends State<IndividualItems> {
   Widget productCard(QuerySnapshot<Object?> data, int index) {
     return InkWell(
       onTap: () {
-        Navigator.pushNamed(context, "productDetailPage",arguments: data.docs[index]);
+        Navigator.pushNamed(context, "productDetailPage",
+            arguments: data.docs[index]);
       },
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
-
       child: Hero(
         tag: data.docs[index].id,
         child: Container(
@@ -119,7 +121,12 @@ class _IndividualItemsState extends State<IndividualItems> {
                     right: 0,
                     bottom: 0,
                     child: RawMaterialButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Provider.of<CartProvider>(context, listen: false)
+                            .addProductToCart(data.docs[index]);
+                        Provider.of<CartNotificationProvider>(context, listen: false)
+                            .checkIsCartEmpty("new");
+                      },
                       elevation: 0,
                       constraints: BoxConstraints(
                         minWidth: 0,

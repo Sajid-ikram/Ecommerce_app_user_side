@@ -10,7 +10,6 @@ class ProfileProvider extends ChangeNotifier {
         await FirebaseFirestore.instance.collection('users').doc(id).get();
     profileUrl = userInfo["url"];
     profileName = userInfo["name"];
-    print(profileUrl);
     notifyListeners();
   }
 

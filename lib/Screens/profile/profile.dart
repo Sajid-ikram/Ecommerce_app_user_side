@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ecommerce_app_for_users/Screens/profile/profileProvider.dart';
+import 'package:ecommerce_app_for_users/Services/profileProvider.dart';
 import 'package:ecommerce_app_for_users/Screens/profile/selectImage.dart';
 import 'package:ecommerce_app_for_users/Services/Authentication.dart';
 import 'package:ecommerce_app_for_users/helperWidgets/appBar.dart';
@@ -7,7 +7,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class Profile extends StatefulWidget {

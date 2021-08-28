@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:ecommerce_app_for_users/Screens/profile/profileProvider.dart';
+import 'package:ecommerce_app_for_users/Services/profileProvider.dart';
 import 'package:ecommerce_app_for_users/helperWidgets/appBar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart' as storage;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'warning.dart';
+import '../../Services/warning.dart';
 
 class ErrorDialog extends StatefulWidget {
   const ErrorDialog({Key? key}) : super(key: key);
