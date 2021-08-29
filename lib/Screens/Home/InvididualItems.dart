@@ -126,6 +126,12 @@ class _IndividualItemsState extends State<IndividualItems> {
                             .addProductToCart(data.docs[index]);
                         Provider.of<CartNotificationProvider>(context, listen: false)
                             .checkIsCartEmpty("new");
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Item is added to the cart'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
                       },
                       elevation: 0,
                       constraints: BoxConstraints(

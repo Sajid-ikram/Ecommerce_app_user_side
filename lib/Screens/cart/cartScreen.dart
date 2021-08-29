@@ -30,7 +30,7 @@ class _CartScreenState extends State<CartScreen> {
         elevation: 0,
         backgroundColor: Color(0xff28292E),
         title: Text(
-          "cart",
+          "Cart",
           style: TextStyle(
             color: Colors.white,
           ),
@@ -51,7 +51,6 @@ class _CartScreenState extends State<CartScreen> {
           if (snapshot.hasError) {
             return Text("Something went wrong");
           }
-
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(
@@ -67,15 +66,23 @@ class _CartScreenState extends State<CartScreen> {
             pro.cartProductId.add(data.docs[i].id);
           }
 
-          return ListView.builder(
-            physics: BouncingScrollPhysics(),
-            itemBuilder: (ctx, index) {
-              return cardProduct(data, index, pro, user);
-            },
-            itemCount: data.size,
-          );
+          return data.size == 0
+              ? emptyCart()
+              : ListView.builder(
+                  physics: BouncingScrollPhysics(),
+                  itemBuilder: (ctx, index) {
+                    return cardProduct(data, index, pro, user);
+                  },
+                  itemCount: data.size,
+                );
         },
       ),
+    );
+  }
+
+  Widget emptyCart() {
+    return Center(
+      child: Text("Empty cart",style: TextStyle(color: Colors.white),),
     );
   }
 
