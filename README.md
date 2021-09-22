@@ -1,6 +1,6 @@
 # ecommerce_app_for_users
 
-This is an ecommerce app (User site ).
+This is an ecommerce app (User site & not complete yet).
 
 <p float="left">
    <img src="https://user-images.githubusercontent.com/69424471/133991281-5b3554a7-8859-4e54-a4e8-7418a77a3d34.png" width="250" />
